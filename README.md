@@ -1,5 +1,5 @@
 # electricsheep-hd-client
-Wikipedia: 
+[Wikipedia](https://en.wikipedia.org/wiki/Electric_sheep): 
 `Electric Sheep is a distributed computing project for animating and evolving fractal flames, which are in turn distributed to the networked computers`
 
 Originaly designed by http://www.electricsheep.org/ but rendered at low resolutions i am trying to bring the sheeps to the next generation of computer displays.
