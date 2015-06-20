@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-sleep 2
 require 'fileutils'
 require 'tempfile'
 require 'pathname'
@@ -13,27 +12,28 @@ require 'zlib'
 require 'json'
 @options={}
 OptionParser.new do |opts|
-  opts.banner = "Usage: daemon.rb [@options]"
-  opts.on("--server SERVER", "Control server to connect to") {|v| @options["server"] = v.to_s}
-  opts.on("--apikey APIKEY", "Your api key") {|v| @options["apikey"] = v}
-  opts.on("--debug", "Debug") {|v| @options["debug"] = true}
-  opts.on("-hHEIGHT", "--height=HEIGHT", "HEIGHT of rendered frames") {|h| @options[:h] = h.to_i}
-  opts.on("-qQUALITY", "--quality=QUALITY", "QUALITY of rendered frames") {|q| @options[:q] = q.to_i}
+  opts.banner = "Usage: #{File.expand_path(__FILE__)} [@options]"
+  opts.on("--server <server>", "Control server to connect to") {|v| @options["server"] = v.to_s}
+  opts.on("--apikey <apikey>", "Your api key") {|v| @options["apikey"] = v}
+  opts.on("--debug", "Debug-mode") {|v| @options["debug"] = true}
+  opts.on("--nice <niceness>",
+          "Niceness (Higher values give result in lower process priority (default: 10, max: 19))") {|v| @options["nice"] = v}
 end.parse!
 
 
-file_abosulte = File.expand_path(__FILE__)
+file_abosulte = File.basename(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
 
 @options["server"] ||= "https://triple6.org:9999"
 raise "You need an api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
 @options["apikey"] ||= File.read("#{@basedir}/api.key").strip
 @options["debug"] ||= false
+@options["nice"] ||= "10"
 $DEBUG = @options["debug"]
 
 
 @anim_template = ""
-NICE=10
+NICE=@options["nice"]
 
 
 class API
@@ -172,6 +172,7 @@ def upload_frame(frame_file, work_set)
 end
 
 loop do
+  sleep 1
   begin
     response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
     raise "Error in season: #{response.body}" if response.code != "200"
