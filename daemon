@@ -1,15 +1,7 @@
 #!/usr/bin/env ruby
-require 'fileutils'
-require 'tempfile'
-require 'pathname'
-require 'optparse'
-require 'uri'
-require 'net/http'
-require 'net/https'
-require 'net/http/post/multipart'
-require 'openssl'
-require 'zlib'
-require 'json'
+%w(fileutils tempfile pathname optparse uri net/http net/https
+net/http/post/multipart openssl zlib json).each{|g| require g}
+
 @options={}
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename(__FILE__)} [OPTIONS]"
@@ -62,38 +54,13 @@ def request_work
   work.each do |w|
     genome_file = "#{@animated_genome_dir}/#{w['sequence']}.flame"
     unless File.exist?(genome_file)
-      gid1 = w['sequence'].split("_")[0]
-      gid2 = w['sequence'].split("_")[1]
       puts "Downloading #{w['sequence']} ..."
-      genome1 = download_animated_genome(w['sequence'])
-      # if gid2 != gid1
-      #   puts "Downloading #{gid2}..."
-      #   genome2 = download_genome(gid2)
-      # else
-      #   genome2 = genome1.dup
-      # end
-      # puts "Animating..."
-      # animate_genome(genome1, genome2)
     end
     puts "Rendering... #{w['sequence']} Frame #{w['frame']}"
     frame = render_frame(genome_file, w["frame"])
     puts "Uploading... #{w['sequence']} Frame #{w['frame']}"
     upload_frame(frame, w)
   end
-end
-
-def download_genome(gid)
-  output_file = "#{@genome_dir}/#{gid}.flam3"
-  response = @api.get("genomes/#{gid}.flam3.gz")
-  raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
-  File.open("#{@genome_dir}/#{gid}.flam3.gz", "w") { |f| f.write(response.body) }
-  Zlib::GzipReader.open("#{@genome_dir}/#{gid}.flam3.gz") do |gz|
-    File.open(output_file, "w") do |g|
-      IO.copy_stream(gz, g)
-    end
-  end
-  File.delete("#{@genome_dir}/#{gid}.flam3.gz")
-  output_file
 end
 
 def download_animated_genome(gid)
@@ -110,27 +77,6 @@ def download_animated_genome(gid)
   output_file
 end
 
-
-def animate_genome(genome1, genome2)
-  gid1  = (File.basename(genome1).split(".") - genome1.split(".").last(1)).join(".")
-  gid2  = (File.basename(genome2).split(".") - genome2.split(".").last(1)).join(".")
-  # Merge old and new flames into a single file to make the animation from
-
-  temp_genome = Tempfile.new("electricsheep-hd")
-  temp_genome.write "<flames name=\"Batch\">\n"
-  temp_genome.write File.read(genome1)
-  temp_genome.write File.read(genome2)
-  temp_genome.write "</flames>\n"
-  temp_genome.rewind
-  temp_genome.fsync
-
-  # Creates a new flame file with enough frames to loop
-  ENV["template"] = File.expand_path(@anim_template)
-  ENV["sequence"] = File.expand_path(temp_genome)
-  ENV["nframes"] = @season[:nframes]
-  `flam3-genome > #{@animated_genome_dir}/#{gid1}_#{gid2}.flame`
-
-end
 def render_frame(genome_file, frame)
   genome = {}
   genome["file"] = Pathname.new(genome_file.to_s)
