@@ -32,4 +32,4 @@ My heard bleeds for you. Propably it can be done. If you want to get the client 
 
 ## Registration
 Register [here](https://sheeps.triple6.org:9999/register) and follow the instructions in the email.
-The Certificated is self-signed. You should be fine ignoring the warning and process to the page.  
+The certificated is self-signed. You should be fine ignoring the warning and process to the page.  
