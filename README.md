@@ -33,3 +33,13 @@ My heard bleeds for you. Propably it can be done. If you want to get the client 
 ## Registration
 Register [here](https://sheeps.triple6.org:9999/register) and follow the instructions in the email.
 The certificated is self-signed. You should be fine ignoring the warning and process to the page.  
+
+## Usage
+<pre>
+$./daemon --help
+Usage: daemon [@options]
+        --server <server>            Control server to connect to
+        --apikey <apikey>            Your api key
+        --debug                      Debug-mode
+        --nice <niceness>            Niceness (Higher values give result in lower process priority (default: 10, max: 19))
+</pre>
