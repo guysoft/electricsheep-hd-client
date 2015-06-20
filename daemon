@@ -124,7 +124,6 @@ def render_frame(genome_file, frame)
 
   concat_name = "#{genome['id']}"
   Dir.mkdir("#{@frame_dir}/#{concat_name}") unless File.exist?("#{@frame_dir}/#{concat_name}")
-  ENV["template"] = File.expand_path(@anim_template)
   ENV["in"] = File.expand_path(genome_file)
   ENV["prefix"]= "#{@frame_dir}/#{concat_name}/"
   ENV["format"] = "jpg"
