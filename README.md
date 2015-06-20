@@ -22,7 +22,7 @@ bundle install
 ./daemon
 </pre>
 
-If this results in `./daemon.rb:29:in <main>': You will need a api key. Please register at https://triple6.org:9999/register (RuntimeError)` continue with registration.
+If this results in `./daemon.rb:29:in <main>': You will need an api key. Please register at https://sheeps.triple6.org:9999/register (RuntimeError)` continue with [registration](https://github.com/kochd/electricsheep-hd-client#registration).
 
 ### Other Linux / Unix / Posix systems
 Currently i dont know. Adept from [Debian / Ubuntu](https://github.com/kochd/electricsheep-hd-client/blob/master/README.md#debian--ubuntu--) and contribute back so others can learn from your wisdom.
