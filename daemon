@@ -64,16 +64,16 @@ def request_work
     unless File.exist?(genome_file)
       gid1 = w['sequence'].split("_")[0]
       gid2 = w['sequence'].split("_")[1]
-      puts "Downloading #{gid1}..."
-      genome1 = download_genome(gid1)
-      if gid2 != gid1
-        puts "Downloading #{gid2}..."
-        genome2 = download_genome(gid2)
-      else
-        genome2 = genome1.dup
-      end
-      puts "Animating..."
-      animate_genome(genome1, genome2)
+      puts "Downloading #{w['sequence']} ..."
+      genome1 = download_animated_genome(w['sequence'])
+      # if gid2 != gid1
+      #   puts "Downloading #{gid2}..."
+      #   genome2 = download_genome(gid2)
+      # else
+      #   genome2 = genome1.dup
+      # end
+      # puts "Animating..."
+      # animate_genome(genome1, genome2)
     end
     puts "Rendering... #{w['sequence']} Frame #{w['frame']}"
     frame = render_frame(genome_file, w["frame"])
@@ -93,6 +93,20 @@ def download_genome(gid)
     end
   end
   File.delete("#{@genome_dir}/#{gid}.flam3.gz")
+  output_file
+end
+
+def download_animated_genome(gid)
+  output_file = "#{@animated_genome_dir}/#{gid}.flame"
+  response = @api.get("animated_genomes/#{gid}.flame.gz")
+  raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
+  File.open("#{@animated_genome_dir}/#{gid}.flame.gz", "w") { |f| f.write(response.body) }
+  Zlib::GzipReader.open("#{@animated_genome_dir}/#{gid}.flame.gz") do |gz|
+    File.open(output_file, "w") do |g|
+      IO.copy_stream(gz, g)
+    end
+  end
+  File.delete("#{@animated_genome_dir}/#{gid}.flame.gz")
   output_file
 end
 
