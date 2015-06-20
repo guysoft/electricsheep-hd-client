@@ -55,6 +55,7 @@ def request_work
     genome_file = "#{@animated_genome_dir}/#{w['sequence']}.flame"
     unless File.exist?(genome_file)
       puts "Downloading #{w['sequence']} ..."
+      download_animated_genome(w['sequence'])
     end
     puts "Rendering... #{w['sequence']} Frame #{w['frame']}"
     frame = render_frame(genome_file, w["frame"])
