@@ -12,7 +12,7 @@ require 'zlib'
 require 'json'
 @options={}
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{File.expand_path(__FILE__)} [@options]"
+  opts.banner = "Usage: #{File.basename(__FILE__)} [@options]"
   opts.on("--server <server>", "Control server to connect to") {|v| @options["server"] = v.to_s}
   opts.on("--apikey <apikey>", "Your api key") {|v| @options["apikey"] = v}
   opts.on("--debug", "Debug-mode") {|v| @options["debug"] = true}
@@ -21,7 +21,7 @@ OptionParser.new do |opts|
 end.parse!
 
 
-file_abosulte = File.basename(__FILE__)
+file_abosulte = File.expand_path(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
 
 @options["server"] ||= "https://triple6.org:9999"
