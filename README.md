@@ -1,5 +1,10 @@
 # electricsheep-hd-client
-Early alpha of a client for electric sheep ecosystem which renders frames in HD ( e.g. 720p, 1080p, 4k, 8k)
+Wikipedia: 
+`Electric Sheep is a distributed computing project for animating and evolving fractal flames, which are in turn distributed to the networked computers`
+
+Originaly designed by http://www.electricsheep.org/ but rendered at low resolutions i am trying to bring the sheeps to the next generation of computer displays.
+This is the early alpha of a client for an electric sheep ecosystem which renders frames in HD ( e.g. 720p, 1080p, 4k, 8k).
+For a good example of what electric sheeps are see [this youtube vid](https://www.youtube.com/watch?v=vo8IC8sMXwQ)
 
 ## Roadmap
 - System is fully operational but in an alpha state. So expect [bugs](https://github.com/kochd/electricsheep-hd-client/issues).
@@ -23,3 +28,4 @@ Currently i dont know. Adept from [Debian / Ubuntu](https://github.com/kochd/ele
 
 ## Registration
 Register [here](https://sheeps.triple6.org:9999/register) and follow the instructions in the email.
+The Certificated is self-signed. You should be fine ignoring the warning and process to the page.  
