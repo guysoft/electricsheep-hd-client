@@ -35,7 +35,7 @@ $DEBUG = @options["debug"]
 @anim_template = ""
 NICE=@options["nice"]
 
-
+class HTTPHalt < StandardError; end
 class API
   attr_reader :http
   def initialize(options={})
@@ -57,54 +57,35 @@ end
 @api = API.new({server: @options["server"]})
 
 def request_work
-  begin
-    response = @api.get("api/request_work?apikey=#{@options["apikey"]}")
-    raise "Error in work request: #{response.body}" if response.code != "200"
-    work = JSON.parse(response.body)
-  rescue NilClass => e
-    print "Error: #{e}"
-    sleep 10
-    return
-  end
+  response = @api.get("api/request_work?apikey=#{@options["apikey"]}")
+  work = JSON.parse(response.body)
   work.each do |w|
     genome_file = "#{@animated_genome_dir}/#{w['sequence']}.flame"
     unless File.exist?(genome_file)
-      begin
-        gid1 = w['sequence'].split("_")[0]
-        gid2 = w['sequence'].split("_")[1]
-        puts "Downloading #{gid1}..."
-        genome1 = download_genome(gid1)
-        unless gid1 == gid2
-          puts "Downloading #{gid2}..."
-          genome2 = download_genome(gid2)
-        else
-          genome2 = genome1.dup
-        end
-        puts "Animating..."
-        animate_genome(genome1, genome2)
-      rescue NilClass => e
-        puts e
-        sleep 10
-        return
+      gid1 = w['sequence'].split("_")[0]
+      gid2 = w['sequence'].split("_")[1]
+      puts "Downloading #{gid1}..."
+      genome1 = download_genome(gid1)
+      if gid2 != gid1
+        puts "Downloading #{gid2}..."
+        genome2 = download_genome(gid2)
+      else
+        genome2 = genome1.dup
       end
+      puts "Animating..."
+      animate_genome(genome1, genome2)
     end
     puts "Rendering... #{w['sequence']} Frame #{w['frame']}"
     frame = render_frame(genome_file, w["frame"])
     puts "Uploading... #{w['sequence']} Frame #{w['frame']}"
-    begin
-      upload_frame(frame, w)
-    rescue NilClass => e
-      puts e
-      sleep 10
-      return
-      end
+    upload_frame(frame, w)
   end
 end
 
 def download_genome(gid)
   output_file = "#{@genome_dir}/#{gid}.flam3"
   response = @api.get("genomes/#{gid}.flam3.gz")
-  raise "Error in download: #{response.body}" if response.code != "200"
+  raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
   File.open("#{@genome_dir}/#{gid}.flam3.gz", "w") { |f| f.write(response.body) }
   Zlib::GzipReader.open("#{@genome_dir}/#{gid}.flam3.gz") do |gz|
     File.open(output_file, "w") do |g|
@@ -142,20 +123,17 @@ def render_frame(genome_file, frame)
   genome["id"] = genome["file"].basename.sub(/\.flame$/,"")
 
   concat_name = "#{genome['id']}"
-  start_frame = frame
   Dir.mkdir("#{@frame_dir}/#{concat_name}") unless File.exist?("#{@frame_dir}/#{concat_name}")
-  end_frame = start_frame
-  #ENV["in"] = File.expand_path("animated_genomes/#{genome[:id]}_#{genome[:id]}.flame")
   ENV["template"] = File.expand_path(@anim_template)
   ENV["in"] = File.expand_path(genome_file)
   ENV["prefix"]= "#{@frame_dir}/#{concat_name}/"
   ENV["format"] = "jpg"
   ENV["jpeg"] = 95.to_s
-  ENV["begin"] = start_frame.to_s
-  ENV["end"] = end_frame.to_s
+  ENV["begin"] = frame.to_s
+  ENV["end"] = frame.to_s
   `nice -#{NICE} flam3-animate`
-  leeding_zeros = "0" * ( 5 - start_frame.to_s.length)
-  return "#{@frame_dir}/#{concat_name}/#{leeding_zeros}#{start_frame}.jpg"
+  leeding_zeros = "0" * ( 5 - frame.to_s.length)
+  "#{@frame_dir}/#{concat_name}/#{leeding_zeros}#{frame}.jpg"
 end
 
 def upload_frame(frame_file, work_set)
@@ -167,7 +145,7 @@ def upload_frame(frame_file, work_set)
                                          "work_set" => work_set.to_json,
                                          "branch" => @branch)
     response = @api.http.request(req)
-    raise "Error in upload: #{response.body}" if response.code != "200"
+    raise HTTPHalt, "Error in upload: #{response.body}" if response.code != "200"
   end
 end
 
@@ -175,16 +153,16 @@ loop do
   sleep 1
   begin
     response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
-    raise "Error in season: #{response.body}" if response.code != "200"
+    raise HTTPHalt, "Error in season: #{response.body}" if response.code != "200"
     @season = JSON.parse(response.body)
 
     File.delete(@anim_template) if File.exist?(@anim_template)
     @anim_template = File.open("anim_template.flame", "w+")
     @anim_template.write "<flame temporal_samples=\"200\" quality=\"#{@season['quality']}\" size=\"#{@season['width']} #{@season['height']}\" />\n"
     @anim_template.fsync
-  rescue NilClass => e
-    puts e
-    sleep 10
+  rescue JSON::ParserError, Errno::ECONNREFUSED, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+    puts "Error: #{e}"
+    sleep 60
     next
   end
 
@@ -201,5 +179,11 @@ loop do
   FileUtils.mkdir_p(@movie_dir)
 
   puts "Requesting new work..."
-  request_work
+  begin
+    request_work
+  rescue JSON::ParserError, Errno::ECONNREFUSED, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+    puts "Error: #{e}"
+    sleep 60
+    next
+  end
 end
