@@ -26,7 +26,7 @@ file_abosulte = File.expand_path(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
 
 @options["server"] ||= "https://triple6.org:9999"
-raise "You will need a api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
+raise "You need an api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
 @options["apikey"] ||= File.read("#{@basedir}/api.key").strip
 @options["debug"] ||= false
 $DEBUG = @options["debug"]
