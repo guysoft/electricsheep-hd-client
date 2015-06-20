@@ -27,7 +27,7 @@ file_abosulte = File.expand_path(__FILE__)
 
 @options["server"] ||= "https://triple6.org:9999"
 raise "You will need a api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
-@options["apikey"] ||= File.read("#{@basedir}/api.key")
+@options["apikey"] ||= File.read("#{@basedir}/api.key").strip
 @options["debug"] ||= false
 $DEBUG = @options["debug"]
 
@@ -159,11 +159,11 @@ def render_frame(genome_file, frame)
 end
 
 def upload_frame(frame_file, work_set)
-  url = URI.parse(@options["server"] + "/api/upload?apikey=#{@options["apikey"]}")
+  url = URI.parse(@options["server"] + "/api/upload")
   File.open(frame_file) do |jpg|
     req = Net::HTTP::Post::Multipart.new(url.path,
                                          "file" => UploadIO.new(jpg, "image/jpeg", "image.jpg"),
-                                         "FOO" => "BAR",
+                                         "apikey" => @options["apikey"],
                                          "work_set" => work_set.to_json,
                                          "branch" => @branch)
     response = @api.http.request(req)
