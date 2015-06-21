@@ -36,10 +36,9 @@ The certificated is self-signed. You should be fine ignoring the warning and pro
 
 ## Usage
 <pre>
-$./daemon --help
 Usage: daemon [OPTIONS]
         --server SERVER              Control server to connect to
         --apikey APIKEY              Your api key
         --debug                      Debug-mode
-        --nice NICENESS              Niceness (Higher values give result in lower process priority (default: 10, max: 19))
+        --nice NICENESS              Niceness (Higher values result in lower process priority (default: 19, max: 19))
 </pre>
