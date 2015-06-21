@@ -9,7 +9,7 @@ OptionParser.new do |opts|
   opts.on("--apikey APIKEY", "Your api key") {|v| @options["apikey"] = v}
   opts.on("--debug", "Debug-mode") {|v| @options["debug"] = true}
   opts.on("--nice NICENESS",
-          "Niceness (Higher values give result in lower process priority (default: 10, max: 19))") {|v| @options["nice"] = v}
+          "Niceness (Higher values result in lower process priority (default: 19, max: 19))") {|v| @options["nice"] = v}
 end.parse!
 
 
@@ -20,9 +20,8 @@ file_abosulte = File.expand_path(__FILE__)
 raise "You need an api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
 @options["apikey"] ||= File.read("#{@basedir}/api.key").strip
 @options["debug"] ||= false
-@options["nice"] ||= "10"
+@options["nice"] ||= "19"
 $DEBUG = @options["debug"]
-
 
 @anim_template = ""
 NICE=@options["nice"]
