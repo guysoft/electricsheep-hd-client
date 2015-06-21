@@ -23,7 +23,6 @@ raise "You need an api key. Please register at #{@options["server"]}/register" i
 @options["nice"] ||= "19"
 $DEBUG = @options["debug"]
 
-@anim_template = ""
 NICE=@options["nice"]
 
 class HTTPHalt < StandardError; end
@@ -114,11 +113,6 @@ loop do
     response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
     raise HTTPHalt, "Error in season: #{response.body}" if response.code != "200"
     @season = JSON.parse(response.body)
-
-    File.delete(@anim_template) if File.exist?(@anim_template)
-    @anim_template = File.open("anim_template.flame", "w+")
-    @anim_template.write "<flame temporal_samples=\"200\" quality=\"#{@season['quality']}\" size=\"#{@season['width']} #{@season['height']}\" />\n"
-    @anim_template.fsync
   rescue JSON::ParserError, Errno::ECONNREFUSED, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
