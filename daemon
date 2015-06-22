@@ -18,7 +18,7 @@ end.parse!
 file_abosulte = File.expand_path(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
 
-@options["server"] ||= "https://triple6.org:9999"
+@options["server"] ||= "https://sheeps.triple6.org"
 raise "You need an api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
 @options["apikey"] ||= File.read("#{@basedir}/api.key").strip
 @options["debug"] ||= false
@@ -124,7 +124,7 @@ loop do
     response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
     raise HTTPHalt, "Error in season: #{response.body}" if response.code != "200"
     @season = JSON.parse(response.body)
-  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, EOFError, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
     next
@@ -145,7 +145,7 @@ loop do
   puts "Requesting new work..."
   begin
     request_work
-  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, EOFError, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
     next
