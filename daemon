@@ -12,6 +12,8 @@ OptionParser.new do |opts|
           "Niceness (Higher values result in lower process priority (default: 19, max: 19))") {|v| @options["nice"] = v}
 end.parse!
 
+`which flam3-animate` ; raise "Missing flame3-animate. You have to install flam3 first" if $? != 0
+`which git` ; puts "Missing git. Autoupdate wont work. Please install git" if $? != 0
 
 file_abosulte = File.expand_path(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
@@ -42,6 +44,15 @@ class API
     response = @http.request(request)
     response
   end
+end
+
+# Autoupdater
+if !ENV["electricsheep-hd-client-updated"]
+  ENV["electricsheep-hd-client-updated"] = "true"
+  Dir.chdir(@basedir)
+  `git pull`
+  exec(__FILE__)
+  exit
 end
 
 @api = API.new({server: @options["server"]})
