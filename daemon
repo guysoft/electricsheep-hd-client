@@ -124,7 +124,7 @@ loop do
     response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
     raise HTTPHalt, "Error in season: #{response.body}" if response.code != "200"
     @season = JSON.parse(response.body)
-  rescue JSON::ParserError, Errno::ECONNREFUSED, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
     next
@@ -145,7 +145,7 @@ loop do
   puts "Requesting new work..."
   begin
     request_work
-  rescue JSON::ParserError, Errno::ECONNREFUSED, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
+  rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
     next
