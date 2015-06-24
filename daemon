@@ -2,6 +2,7 @@
 %w(fileutils tempfile pathname optparse uri net/http net/https
 net/http/post/multipart openssl zlib json).each{|g| require g}
 
+@argv = ARGV.dup
 @options={}
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename(__FILE__)} [OPTIONS]"
@@ -24,7 +25,6 @@ raise "You need an api key. Please register at #{@options["server"]}/register" i
 @options["debug"] ||= false
 @options["nice"] ||= "19"
 $DEBUG = @options["debug"]
-
 NICE=@options["nice"]
 
 class HTTPHalt < StandardError; end
@@ -45,13 +45,12 @@ class API
     response
   end
 end
-
 # Autoupdater
 if !ENV["electricsheep-hd-client-updated"]
   ENV["electricsheep-hd-client-updated"] = "true"
   Dir.chdir(@basedir)
   `git pull`
-  exec(__FILE__)
+  exec("#{__FILE__} #{@argv.join(' ')}")
   exit
 end
 
@@ -118,6 +117,19 @@ def upload_frame(frame_file, work_set)
   end
 end
 
+def download_sequence
+  response = @api.get("api/request_sequence_list?apikey=#{@options["apikey"]}")
+  if response.code != "200"
+    puts response.body
+    return false
+  end
+  sequences = JSON.parse(response.body)
+  wanted = sequences.select{|s| !File.exist?("#{@movie_dir}/#{s}")}.first
+  response = @api.get("api/request_sequence?apikey=#{@options["apikey"]}&seq=#{wanted}")
+  puts "Downloading #{wanted}..."
+  File.open("#{@movie_dir}/#{wanted}", "w") {|f| f.write(response.body)}
+end
+
 loop do
   sleep 1
   begin
@@ -142,8 +154,10 @@ loop do
   FileUtils.mkdir_p(@frame_dir)
   FileUtils.mkdir_p(@movie_dir)
 
-  puts "Requesting new work..."
   begin
+    puts "Requesting new sequence ..."
+    download_sequence
+    puts "Requesting new work..."
     request_work
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
