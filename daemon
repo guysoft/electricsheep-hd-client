@@ -122,14 +122,15 @@ end
 def download_sequence
   response = @api.get("api/request_sequence_list?apikey=#{@options["apikey"]}")
   if response.code != "200"
-    puts response.body
-    return false
+    return response.body
   end
   sequences = JSON.parse(response.body)
   wanted = sequences.select{|s| !File.exist?("#{@movie_dir}/#{s}")}.first
-  response = @api.get("api/request_sequence?apikey=#{@options["apikey"]}&seq=#{wanted}")
+  return "Nothing to download" if wanted.nil?
   puts "Downloading #{wanted}..."
+  response = @api.get("api/request_sequence?apikey=#{@options["apikey"]}&seq=#{wanted}")
   File.open("#{@movie_dir}/#{wanted}", "w") {|f| f.write(response.body)}
+  return "OK"
 end
 
 loop do
@@ -159,7 +160,7 @@ loop do
   begin
     unless @options["no-download"]
       puts "Requesting new sequence ..."
-      download_sequence
+      puts download_sequence
     end
     puts "Requesting new work..."
     request_work
