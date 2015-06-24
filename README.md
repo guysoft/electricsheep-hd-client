@@ -38,5 +38,6 @@ Usage: daemon [OPTIONS]
         --server SERVER              Control server to connect to
         --apikey APIKEY              Your api key
         --debug                      Debug-mode
+        --no-download                Do not download movies
         --nice NICENESS              Niceness (Higher values result in lower process priority (default: 19, max: 19))
 </pre>
