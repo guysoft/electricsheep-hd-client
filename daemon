@@ -2,6 +2,7 @@
 %w(fileutils tempfile pathname optparse uri net/http net/https
 net/http/post/multipart openssl zlib json).each{|g| require g}
 
+ENV["PATH"] += ";#{File.expand_path("./git+flam3/bin")}"  if File.exist?("./git+flam3/bin")
 @argv = ARGV.dup
 @options={}
 OptionParser.new do |opts|
@@ -164,6 +165,7 @@ loop do
     end
     puts "Requesting new work..."
     request_work
+	exit if ENV["OCRA"]
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
