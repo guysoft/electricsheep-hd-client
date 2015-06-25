@@ -171,7 +171,7 @@ loop do
     end
     puts "Requesting new work..."
     request_work
-    exit if ENV["OCRA"]
+    break if ENV["OCRA"]
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
