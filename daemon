@@ -3,7 +3,7 @@
 net/http/post/multipart openssl zlib json).each{|g| require g}
 
 if Gem.win_platform?
-  ENV["PATH"] += ";#{File.expand_path("./git+flam3/bin")}" if File.exist?("./git+flam3/bin")
+  ENV["PATH"] += ";#{File.expand_path("./git+flam3+ruby/bin")}" if File.exist?("./git+flam3+ruby/bin")
 end
 @argv = ARGV.dup
 @options={}
