@@ -2,7 +2,10 @@
 %w(fileutils tempfile pathname optparse uri net/http net/https
 net/http/post/multipart openssl zlib json).each{|g| require g}
 
-ENV["PATH"] += ";#{File.expand_path("./git+flam3/bin")}"  if File.exist?("./git+flam3/bin")
+WINDOWS = true if `ver`.include("Windows")
+if WINDOWS
+  ENV["PATH"] += ";#{File.expand_path("./git+flam3/bin")}" if File.exist?("./git+flam3/bin")
+end
 @argv = ARGV.dup
 @options={}
 OptionParser.new do |opts|
@@ -53,7 +56,7 @@ if !ENV["electricsheep-hd-client-updated"]
   ENV["electricsheep-hd-client-updated"] = "true"
   Dir.chdir(@basedir)
   `git pull`
-  exec("#{__FILE__} #{@argv.join(' ')}")
+  exec("ruby #{__FILE__} #{@argv.join(' ')}")
   exit
 end
 
@@ -79,9 +82,9 @@ def download_animated_genome(gid)
   output_file = "#{@animated_genome_dir}/#{gid}.flame"
   response = @api.get("animated_genomes/#{gid}.flame.gz")
   raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
-  File.open("#{@animated_genome_dir}/#{gid}.flame.gz", "w") { |f| f.write(response.body) }
+  File.open("#{@animated_genome_dir}/#{gid}.flame.gz", "wb") { |f| f.write(response.body) }
   Zlib::GzipReader.open("#{@animated_genome_dir}/#{gid}.flame.gz") do |gz|
-    File.open(output_file, "w") do |g|
+    File.open(output_file, "wb") do |g|
       IO.copy_stream(gz, g)
     end
   end
@@ -130,7 +133,7 @@ def download_sequence
   return "Nothing to download" if wanted.nil?
   puts "Downloading #{wanted}..."
   response = @api.get("api/request_sequence?apikey=#{@options["apikey"]}&seq=#{wanted}")
-  File.open("#{@movie_dir}/#{wanted}", "w") {|f| f.write(response.body)}
+  File.open("#{@movie_dir}/#{wanted}", "wb") {|f| f.write(response.body)}
   return "OK"
 end
 
@@ -165,7 +168,7 @@ loop do
     end
     puts "Requesting new work..."
     request_work
-	exit if ENV["OCRA"]
+    exit if ENV["OCRA"]
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
     sleep 60
