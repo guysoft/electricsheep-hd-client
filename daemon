@@ -2,7 +2,7 @@
 %w(fileutils tempfile pathname optparse uri net/http net/https
 net/http/post/multipart openssl zlib json).each{|g| require g}
 
-WINDOWS = true if `ver`.include("Windows")
+WINDOWS = true if `ver`.include?("Windows")
 if WINDOWS
   ENV["PATH"] += ";#{File.expand_path("./git+flam3/bin")}" if File.exist?("./git+flam3/bin")
 end
