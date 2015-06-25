@@ -55,7 +55,11 @@ if !ENV["electricsheep-hd-client-updated"]
   ENV["electricsheep-hd-client-updated"] = "true"
   Dir.chdir(@basedir)
   `git pull`
-  exec("ruby #{__FILE__} #{@argv.join(' ')}")
+  if !ENV["OCRA"]
+    exec("ruby #{__FILE__} #{@argv.join(' ')}")
+  else
+    exec("ocra #{__FILE__} #{@argv.join(' ')}")
+  end
   exit
 end
 
