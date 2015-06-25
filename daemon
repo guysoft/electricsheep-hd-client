@@ -1,38 +1,38 @@
 #!/usr/bin/env ruby
 %w(fileutils tempfile pathname optparse uri net/http net/https
-   net/http/post/multipart openssl zlib json).each { |g| require g }
+net/http/post/multipart openssl zlib json).each{|g| require g}
 
 @argv = ARGV.dup
-@options = {}
+@options={}
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename(__FILE__)} [OPTIONS]"
-  opts.on('--server SERVER', 'Control server to connect to') { |v| @options['server'] = v.to_s }
-  opts.on('--apikey APIKEY', 'Your api key') { |v| @options['apikey'] = v }
-  opts.on('--debug', 'Debug-mode') { |_v| @options['debug'] = true }
-  opts.on('--no-download', 'Do not download movies') { |_v| @options['no-download'] = true }
-  opts.on('--nice NICENESS',
-          'Niceness (Higher values result in lower process priority (default: 19, max: 19))') { |v| @options['nice'] = v }
+  opts.on("--server SERVER", "Control server to connect to") {|v| @options["server"] = v.to_s}
+  opts.on("--apikey APIKEY", "Your api key") {|v| @options["apikey"] = v}
+  opts.on("--debug", "Debug-mode") {|v| @options["debug"] = true}
+  opts.on("--no-download", "Do not download movies") {|v| @options["no-download"] = true}
+  opts.on("--nice NICENESS",
+          "Niceness (Higher values result in lower process priority (default: 19, max: 19))") {|v| @options["nice"] = v}
 end.parse!
 
-`which flam3-animate`; fail 'Missing flame3-animate. You have to install flam3 first' if $CHILD_STATUS != 0
-`which git`; puts 'Missing git. Autoupdate wont work. Please install git' if $CHILD_STATUS != 0
+`which flam3-animate` ; raise "Missing flame3-animate. You have to install flam3 first" if $? != 0
+`which git` ; puts "Missing git. Autoupdate wont work. Please install git" if $? != 0
 
 file_abosulte = File.expand_path(__FILE__)
 @basedir = Pathname.new(file_abosulte).dirname
 
-@options['server'] ||= 'https://sheeps.triple6.org'
-fail "You need an api key. Please register at #{@options['server']}/register" if @options['apikey'].nil? && !File.exist?("#{@basedir}/api.key")
-@options['apikey'] ||= File.read("#{@basedir}/api.key").strip
-@options['debug'] ||= false
-@options['no-download'] ||= false
-@options['nice'] ||= '19'
-$DEBUG = @options['debug']
-NICE = @options['nice']
+@options["server"] ||= "https://sheeps.triple6.org"
+raise "You need an api key. Please register at #{@options["server"]}/register" if @options["apikey"].nil? && !File.exist?("#{@basedir}/api.key")
+@options["apikey"] ||= File.read("#{@basedir}/api.key").strip
+@options["debug"] ||= false
+@options["no-download"] ||= false
+@options["nice"] ||= "19"
+$DEBUG = @options["debug"]
+NICE=@options["nice"]
 
 class HTTPHalt < StandardError; end
 class API
   attr_reader :http
-  def initialize(options = {})
+  def initialize(options={})
     @server = options[:server]
     @uri = URI.parse(@server)
     @http = Net::HTTP.new(@uri.host, @uri.port)
@@ -48,18 +48,18 @@ class API
   end
 end
 # Autoupdater
-unless ENV['electricsheep-hd-client-updated']
-  ENV['electricsheep-hd-client-updated'] = 'true'
+if !ENV["electricsheep-hd-client-updated"]
+  ENV["electricsheep-hd-client-updated"] = "true"
   Dir.chdir(@basedir)
   `git pull`
   exec("#{__FILE__} #{@argv.join(' ')}")
   exit
 end
 
-@api = API.new(server: @options['server'])
+@api = API.new({server: @options["server"]})
 
 def request_work
-  response = @api.get("api/request_work?apikey=#{@options['apikey']}")
+  response = @api.get("api/request_work?apikey=#{@options["apikey"]}")
   work = JSON.parse(response.body)
   work.each do |w|
     genome_file = "#{@animated_genome_dir}/#{w['sequence']}.flame"
@@ -68,7 +68,7 @@ def request_work
       download_animated_genome(w['sequence'])
     end
     puts "Rendering... #{w['sequence']} Frame #{w['frame']}"
-    frame = render_frame(genome_file, w['frame'])
+    frame = render_frame(genome_file, w["frame"])
     puts "Uploading... #{w['sequence']} Frame #{w['frame']}"
     upload_frame(frame, w)
   end
@@ -77,10 +77,10 @@ end
 def download_animated_genome(gid)
   output_file = "#{@animated_genome_dir}/#{gid}.flame"
   response = @api.get("animated_genomes/#{gid}.flame.gz")
-  fail HTTPHalt, "Error in download: #{response.body}" if response.code != '200'
-  File.open("#{@animated_genome_dir}/#{gid}.flame.gz", 'w') { |f| f.write(response.body) }
+  raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
+  File.open("#{@animated_genome_dir}/#{gid}.flame.gz", "w") { |f| f.write(response.body) }
   Zlib::GzipReader.open("#{@animated_genome_dir}/#{gid}.flame.gz") do |gz|
-    File.open(output_file, 'w') do |g|
+    File.open(output_file, "w") do |g|
       IO.copy_stream(gz, g)
     end
   end
@@ -90,54 +90,54 @@ end
 
 def render_frame(genome_file, frame)
   genome = {}
-  genome['file'] = Pathname.new(genome_file.to_s)
-  genome['id'] = genome['file'].basename.sub(/\.flame$/, '')
+  genome["file"] = Pathname.new(genome_file.to_s)
+  genome["id"] = genome["file"].basename.sub(/\.flame$/,"")
 
   concat_name = "#{genome['id']}"
   Dir.mkdir("#{@frame_dir}/#{concat_name}") unless File.exist?("#{@frame_dir}/#{concat_name}")
-  ENV['in'] = File.expand_path(genome_file)
-  ENV['prefix'] = "#{@frame_dir}/#{concat_name}/"
-  ENV['format'] = 'jpg'
-  ENV['jpeg'] = 95.to_s
-  ENV['begin'] = frame.to_s
-  ENV['end'] = frame.to_s
+  ENV["in"] = File.expand_path(genome_file)
+  ENV["prefix"]= "#{@frame_dir}/#{concat_name}/"
+  ENV["format"] = "jpg"
+  ENV["jpeg"] = 95.to_s
+  ENV["begin"] = frame.to_s
+  ENV["end"] = frame.to_s
   `nice -#{NICE} flam3-animate`
-  leeding_zeros = '0' * (5 - frame.to_s.length)
+  leeding_zeros = "0" * ( 5 - frame.to_s.length)
   "#{@frame_dir}/#{concat_name}/#{leeding_zeros}#{frame}.jpg"
 end
 
 def upload_frame(frame_file, work_set)
-  url = URI.parse(@options['server'] + '/api/upload')
+  url = URI.parse(@options["server"] + "/api/upload")
   File.open(frame_file) do |jpg|
     req = Net::HTTP::Post::Multipart.new(url.path,
-                                         'file' => UploadIO.new(jpg, 'image/jpeg', 'image.jpg'),
-                                         'apikey' => @options['apikey'],
-                                         'work_set' => work_set.to_json,
-                                         'branch' => @branch)
+                                         "file" => UploadIO.new(jpg, "image/jpeg", "image.jpg"),
+                                         "apikey" => @options["apikey"],
+                                         "work_set" => work_set.to_json,
+                                         "branch" => @branch)
     response = @api.http.request(req)
-    fail HTTPHalt, "Error in upload: #{response.body}" if response.code != '200'
+    raise HTTPHalt, "Error in upload: #{response.body}" if response.code != "200"
   end
 end
 
 def download_sequence
-  response = @api.get("api/request_sequence_list?apikey=#{@options['apikey']}")
-  if response.code != '200'
+  response = @api.get("api/request_sequence_list?apikey=#{@options["apikey"]}")
+  if response.code != "200"
     return response.body
   end
   sequences = JSON.parse(response.body)
-  wanted = sequences.select { |s| !File.exist?("#{@movie_dir}/#{s}") }.first
-  return 'Nothing to download' if wanted.nil?
+  wanted = sequences.select{|s| !File.exist?("#{@movie_dir}/#{s}")}.first
+  return "Nothing to download" if wanted.nil?
   puts "Downloading #{wanted}..."
-  response = @api.get("api/request_sequence?apikey=#{@options['apikey']}&seq=#{wanted}")
-  File.open("#{@movie_dir}/#{wanted}", 'w') { |f| f.write(response.body) }
-  'OK'
+  response = @api.get("api/request_sequence?apikey=#{@options["apikey"]}&seq=#{wanted}")
+  File.open("#{@movie_dir}/#{wanted}", "w") {|f| f.write(response.body)}
+  return "OK"
 end
 
 loop do
   sleep 1
   begin
-    response = @api.get("api/active_season?apikey=#{@options['apikey']}")
-    fail HTTPHalt, "Error in season: #{response.body}" if response.code != '200'
+    response = @api.get("api/active_season?apikey=#{@options["apikey"]}")
+    raise HTTPHalt, "Error in season: #{response.body}" if response.code != "200"
     @season = JSON.parse(response.body)
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
@@ -145,7 +145,7 @@ loop do
     next
   end
 
-  @branch = @season['name']
+  @branch = @season["name"]
   @branch_dir = "#{@basedir}/branches/#{@branch}"
   @genome_dir = "#{@branch_dir}/genomes"
   @animated_genome_dir = "#{@branch_dir}/animated_genomes"
@@ -158,11 +158,11 @@ loop do
   FileUtils.mkdir_p(@movie_dir)
 
   begin
-    unless @options['no-download']
-      puts 'Requesting new sequence ...'
+    unless @options["no-download"]
+      puts "Requesting new sequence ..."
       puts download_sequence
     end
-    puts 'Requesting new work...'
+    puts "Requesting new work..."
     request_work
   rescue JSON::ParserError, Errno::ECONNREFUSED, Errno::ECONNRESET, SocketError, Errno::ETIMEDOUT, HTTPHalt => e
     puts "Error: #{e}"
