@@ -40,7 +40,9 @@ class API
     @uri = URI.parse(@server)
     @http = Net::HTTP.new(@uri.host, @uri.port)
     @http.use_ssl = true
-    @http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    @http.ca_file = "#{File.dirname(__FILE__)}/sheeps.crt"
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    http.verify_depth = 5
   end
 
   def get(url)
