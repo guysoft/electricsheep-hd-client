@@ -85,7 +85,7 @@ end
 
 def download_animated_genome(gid)
   output_file = "#{@animated_genome_dir}/#{gid}.flame"
-  response = @api.get("animated_genomes/#{gid}.flame.gz")
+  response = @api.get("#{@branch}/animated_genomes/#{gid}.flame.gz")
   raise HTTPHalt, "Error in download: #{response.body}" if response.code != "200"
   File.open("#{@animated_genome_dir}/#{gid}.flame.gz", "wb") { |f| f.write(response.body) }
   Zlib::GzipReader.open("#{@animated_genome_dir}/#{gid}.flame.gz") do |gz|
@@ -159,6 +159,7 @@ loop do
   end
 
   @branch = @season["name"]
+  puts "Active season: #{@branch}"
   @branch_dir = "#{@basedir}/branches/#{@branch}"
   @genome_dir = "#{@branch_dir}/genomes"
   @animated_genome_dir = "#{@branch_dir}/animated_genomes"
