@@ -12,7 +12,7 @@ For a good example of what electric sheeps are see [this youtube vid](https://ww
 - GPU rendering with CUDA is planned but this need more investigation
 
 ## IRC
-Join us on [#electricsheephd @ freenode.net](webchat.freenode.net/?randomnick=1&channels=%23electricsheephd&prompt=0&uio=d4)
+Join us on [#electricsheephd @ freenode.net](http://webchat.freenode.net/?randomnick=1&channels=%23electricsheephd&prompt=0&uio=d4)
 ## Getting started
 ### Debian / Ubuntu / ...
 <pre>
