@@ -11,6 +11,8 @@ For a good example of what electric sheeps are see [this youtube vid](https://ww
 - Currently there is no frontend where you can you can see the overall rendering process by the community.
 - GPU rendering with CUDA is planned but this need more investigation
 
+## IRC
+Join us on [#electricsheephd @ freenode.net](webchat.freenode.net/?randomnick=1&channels=%23electricsheephd&prompt=0&uio=d4)
 ## Getting started
 ### Debian / Ubuntu / ...
 <pre>
