@@ -46,4 +46,4 @@ Usage: daemon [OPTIONS]
         --nice NICENESS              Niceness (Higher values result in lower process priority (default: 19, max: 19))
 </pre>
 
-One your daemon is rendering frames you will gain so called credits for every frame you have rendered. Your daemon will then start to "buy" completed sequences using your gained credits and download them to `$BASE_DIR/branches/$CURRENT_BRANCH/movies`. Currently you will only get short sequences of 5 seconds which you need to concat your self if you want a full blown movie. 
+Once your daemon is rendering frames you will gain so called credits for every frame you have rendered. Your daemon will then start to "buy" completed sequences using your gained credits and download them to `$BASE_DIR/branches/$CURRENT_BRANCH/movies`. Currently you will only get short sequences of 5 seconds which you need to concat your self if you want a full blown movie. 
